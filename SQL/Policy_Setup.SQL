@@ -3,6 +3,9 @@ CREATE TABLE economic_zone(
                     PRIMARY KEY
                     NOT NULL,
 
+    e_zone_name     VARCHAR(20)
+                    NOT NULL,
+
     timing_start    TIME, -- A null value means the timing_start is at the start of day
     
     timing_end      TIME, -- A null value means the timing_end is at the end of day

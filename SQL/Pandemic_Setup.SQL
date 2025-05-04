@@ -1,9 +1,9 @@
 CREATE TABLE pandemics (
   id          SERIAL PRIMARY KEY,
-  name        TEXT NOT NULL,              -- e.g., COVID-19
-  start_date  DATE NOT NULL,
-  end_date    DATE,                       -- NULL if ongoing
-  description TEXT
+  p_name        TEXT NOT NULL,              -- e.g., COVID-19
+  date_start  DATE NOT NULL,
+  date_end    DATE,                       -- NULL if ongoing
+  descriptiontxt TEXT
 );
 
 CREATE TABLE pandemic_stats (
