@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pandemic Spread Visualization</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  svg {
+    border: 1px solid #ccc;
+    width: 100%;
+    height: 600px;
+  }
+  .node circle {
+    stroke: #fff;
+    stroke-width: 1.5px;
+  }
+  .link {
+    stroke: #999;
+    stroke-opacity: 0.6;
+  }
+  .tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 6px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="container my-4">
+  <h2 class="mb-4">Pandemic Spread Visualization</h2>
+
+  <form method="get" class="row g-3 align-items-center mb-4">
+    <div class="col-auto">
+      <label for="pandemicSelect" class="col-form-label">Select Pandemic:</label>
+    </div>
+    <div class="col-auto">
+      <select id="pandemicSelect" name="pandemic_id" class="form-select" required>
+        <option value="">-- Choose Pandemic --</option>
+        {% for pid, pname in pandemics %}
+          <option value="{{ pid }}" {% if selected_pandemic == pid %}selected{% endif %}>{{ pname }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <label for="parameterSelect" class="col-form-label">Parameter:</label>
+    </div>
+    <div class="col-auto">
+      <select id="parameterSelect" name="parameter" class="form-select">
+        {% set params = ['deaths', 'cured', 'infected', 'total_population'] %}
+        {% for p in params %}
+          <option value="{{ p }}" {% if parameter == p %}selected{% endif %}>{{ p.replace('_', ' ').title() }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary">Show Graph</button>
+    </div>
+  </form>
+
+  {% if selected_pandemic %}
+  <svg id="graph"></svg>
+  {% else %}
+  <p>Please select a pandemic and parameter to view the graph.</p>
+  {% endif %}
+</div>
+
+<!-- D3.js CDN -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+  {% if selected_pandemic %}
+  const graph = {{ graph_data|safe }};
+
+  const width = document.getElementById('graph').clientWidth;
+  const height = 600;
+
+  const svg = d3.select("#graph")
+    .attr("width", width)
+    .attr("height", height);
+
+  // Scale for radius
+  const maxRadius = 50;
+  const minRadius = 5;
+  const maxValue = d3.max(graph.nodes, d => d.value);
+
+  const radiusScale = d3.scaleSqrt()
+    .domain([0, maxValue])
+    .range([minRadius, maxRadius]);
+  
+  // Create simulation
+  const simulation = d3.forceSimulation(graph.nodes)
+    .force("link", d3.forceLink(graph.links).id(d => d.id).distance(100).strength(d => d.weight))
+    .force("charge", d3.forceManyBody().strength(-300))
+    .force("center", d3.forceCenter(width / 2, height / 2));
+
+  // Draw links
+  const link = svg.append("g")
+    .attr("stroke", "#999")
+    .attr("stroke-opacity", 0.6)
+    .selectAll("line")
+    .data(graph.links)
+    .join("line")
+    .attr("stroke-width", d => Math.sqrt(d.weight) * 5);
+
+  // Group for nodes and labels together
+  const nodeGroup = svg.append("g")
+    .selectAll(".node")
+    .data(graph.nodes)
+    .enter().append("g")
+    .attr("class", "node")
+    .call(drag(simulation));
+
+  // Draw circles
+  nodeGroup.append("circle")
+    .attr("r", d => radiusScale(d.value))
+    .attr("fill", "steelblue")
+    .on("mouseover", (event, d) => {
+      tooltip.transition().duration(200).style("opacity", .9);
+      tooltip.html(`<strong>${d.name}</strong><br/>Value: ${d.value}`)
+        .style("left", (event.pageX + 10) + "px")
+        .style("top", (event.pageY - 28) + "px");
+    })
+    .on("mouseout", () => {
+      tooltip.transition().duration(500).style("opacity", 0);
+    });
+
+  // Draw labels inside circles
+  nodeGroup.append("text")
+    .attr("dy", ".35em")  // Vertical align middle
+    .attr("text-anchor", "middle") // Horizontal align center
+    .style("font-size", "10px")
+    .style("pointer-events", "none") // Don't interfere with circle events
+    .style("fill", "white")
+    .style("text-shadow", "1px 1px 0 rgba(0,0,0,0.5)") // Add shadow for readability
+    .text(d => d.name)
+    // Adjust font size to fit circle
+    .style("font-size", function(d) {
+      const radius = radiusScale(d.value);
+      const textLength = this.getComputedTextLength();
+      const fontSize = Math.min(2 * radius / textLength * 10, 10); // Limit font size
+      return fontSize + "px";
+    });
+
+  simulation.on("tick", () => {
+    link
+      .attr("x1", d => d.source.x)
+      .attr("y1", d => d.source.y)
+      .attr("x2", d => d.source.x)
+      .attr("y2", d => d.source.y);
+
+    nodeGroup
+      .attr("transform", d => `translate(${d.x},${d.y})`);
+  });
+
+  simulation.on("tick", () => {
+  // Clamp nodes inside viewport with padding = radius
+  nodeGroup.attr("transform", d => {
+    const r = radiusScale(d.value);
+    d.x = Math.max(r, Math.min(width - r, d.x));
+    d.y = Math.max(r, Math.min(height - r, d.y));
+    return `translate(${d.x},${d.y})`;
+  });
+
+  link
+    .attr("x1", d => d.source.x)
+    .attr("y1", d => d.source.y)
+    .attr("x2", d => d.target.x)
+    .attr("y2", d => d.target.y);
+});
+
+
+  // Drag behavior
+  function drag(simulation) {
+    function dragstarted(event, d) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
+    function dragended(event, d) {
+      if (!event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+    return d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended);
+  }
+  {% endif %}
+</script>
+</body>
+</html>

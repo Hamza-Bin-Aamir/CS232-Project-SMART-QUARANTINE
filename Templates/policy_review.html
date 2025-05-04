@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Policy Review</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  .table-striped tbody tr:nth-of-type(odd) { background-color: #f9f9f9; }
+  .table-striped tbody tr:hover { background-color: #f1f1f1; }
+  .effectiveness-positive { color: green; font-weight: bold; }
+  .effectiveness-negative { color: red; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="container my-4">
+  <h2 class="text-center mb-4">Policy Review</h2>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Policy Effectiveness</h4>
+    </div>
+    <div class="card-body">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Policy ID</th>
+            <th>Policy Name</th>
+            <th>Pandemic ID</th>
+            <th>Affected Area</th>
+            <th>Infection Rate</th>
+            <th>Cure Rate</th>
+            <th>Death Rate</th>
+            <th>Effectiveness</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for policy in policies %}
+          <tr>
+            <td>{{ policy.policy_id }}</td>
+            <td>{{ policy.policy_name }}</td>
+            <td>{{ policy.pandemic_id }}</td>
+            <td>{{ policy.area_name }}</td>
+            <td>{{ policy.infection_rate }}</td>
+            <td>{{ policy.cure_rate }}</td>
+            <td>{{ policy.death_rate }}</td>
+            <td>
+              <span class="{% if policy.effectiveness >= 0 %}effectiveness-positive{% else %}effectiveness-negative{% endif %}">
+                {{ policy.effectiveness }}%
+              </span>
+            </td>
+            <td>{{ policy.date_start }}</td>
+            <td>{{ policy.date_end or 'Ongoing' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

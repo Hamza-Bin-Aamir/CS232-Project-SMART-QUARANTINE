@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Smart Quarantine Dashboard</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">Smart Quarantine</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+    </nav>
+    <main class="container">
+        
+        <div class="container my-4">
+            <h1 class="text-center mb-4">Next Day Simulation</h1>
+
+            <!-- Next Day Button -->
+            <div class="text-center mb-4">
+                <button id="nextDayButton" class="btn btn-primary btn-lg">Simulate Next Day</button>
+            </div>
+
+            <!-- Status Message -->
+            <div id="statusMessage" class="alert d-none" role="alert"></div>
+
+            <!-- Updated Stats -->
+            <div id="updatedStats" class="mt-4">
+                <h3 class="text-center">Updated Stats</h3>
+                <pre id="statsContent" class="bg-light p-3 rounded"></pre>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-light text-center py-3 mt-5">
+        <div class="container">
+            <small>&copy; Aoun Abdullah, Hamza Bin Aamir, Malik Ahmed Abdullah </small>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle CDN (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('nextDayButton').addEventListener('click', async () => {
+            const statusMessage = document.getElementById('statusMessage');
+            const statsContent = document.getElementById('statsContent');
+            statusMessage.classList.add('d-none'); // Hide the status message initially
+
+            try {
+                // Send POST request to /next-day
+                const response = await axios.post('/next-day');
+                const data = response.data;
+
+                // Show success message
+                statusMessage.classList.remove('d-none', 'alert-danger');
+                statusMessage.classList.add('alert-success');
+                statusMessage.textContent = data.message;
+
+                // Display updated stats
+                statsContent.textContent = JSON.stringify(data.updated_stats, null, 2);
+            } catch (error) {
+                // Show error message
+                statusMessage.classList.remove('d-none', 'alert-success');
+                statusMessage.classList.add('alert-danger');
+                statusMessage.textContent = error.response?.data?.error || 'An error occurred while simulating the next day.';
+            }
+        });
+    </script>
+</body>
+</html>
