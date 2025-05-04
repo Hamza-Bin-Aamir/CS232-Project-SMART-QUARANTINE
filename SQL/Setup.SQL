@@ -26,7 +26,7 @@ CREATE TABLE economic_zone(
     -- Both null means the timing lasts the whole day
 
     p_impact        DECIMAL(5,2)
-                    NOT NULL,
+                    NOT NULL
 );
 
 CREATE TABLE econ_makeup(
@@ -77,11 +77,11 @@ CREATE TABLE pandemic_stats (
 
 CREATE TABLE economic_zone_adj(
     source              INTEGER
-                        FOREIGN KEY REFERENCES economic_zone(e_zone)
+                        REFERENCES economic_zone(e_zone)
                         NOT NULL,
     
     dest                INTEGER
-                        FOREIGN KEY REFERENCES economic_zone(e_zone)
+                        REFERENCES economic_zone(e_zone)
                         NOT NULL,
     
     adjacency_power     DECIMAL(5, 2)
@@ -94,12 +94,12 @@ CREATE TABLE policy_type(
                         NOT NULL,
 
     e_zone              INTEGER 
-                        FOREIGN KEY REFERENCES economic_zone(e_zone) 
+                        REFERENCES economic_zone(e_zone) 
                         NOT NULL,
 
     time_frame_start    TIME, -- A null value means the time_frame_start is at the start of day
 
-    time_frame_end      TIME, -- A null value means the time_frame_end is at the end of day
+    time_frame_end      TIME -- A null value means the time_frame_end is at the end of day
     
     -- Both null means the time frame lasts the whole day
 );
@@ -110,28 +110,29 @@ CREATE TABLE policies(
                 NOT NULL,
 
     pandemic_id INTEGER
-                FOREIGN KEY REFERENCES pandemics(id)
+                REFERENCES pandemics(id)
                 NOT NULL, 
 
     p_name      VARCHAR(25) 
                 NOT NULL,
 
     p_type      INTEGER 
-                FOREIGN KEY REFERENCES policy_types(p_type) 
+                REFERENCES policy_type(p_type) 
                 NOT NULL
 );
 
 CREATE TABLE policy_history(
     policy_id       INTEGER 
-                    FOREIGN KEY REFERENCES policies(policy_id)
+                    REFERENCES policies(policy_id)
                     NOT NULL,
 
-    affected_area   FOREIGN KEY REFERENCES areas (area_id)
+    affected_area  	INTEGER
+					REFERENCES areas (id)
                     NOT NULL,
 
     date_start      DATE
                     NOT NULL,
     
-    date_end        DATE, -- A null value means that the policy is ongoing
+    date_end        DATE -- A null value means that the policy is ongoing
 );
 
