@@ -67,4 +67,4 @@ CREATE TABLE policy_history(
                     NOT NULL,
     
     date_end        DATE, -- A null value means that the policy is ongoing
-)
+);
