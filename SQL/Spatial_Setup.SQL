@@ -25,10 +25,3 @@ CREATE TABLE area_adj (
     dest        INTEGER FOREIGN KEY REFERENCES areas(id),
     adj_power   DECIMAL (5, 2)
 );
-CREATE TABLE cases (
-    id SERIAL PRIMARY KEY,
-    area_id INTEGER REFERENCES areas(id),
-    patient_status TEXT,    -- e.g. 'active', 'recovered', 'deceased'
-    report_date DATE,
-    location geometry(Point,4326) NOT NULL
-)
