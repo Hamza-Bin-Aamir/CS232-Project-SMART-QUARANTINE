@@ -50,6 +50,10 @@ CREATE TABLE policies(
                 PRIMARY KEY 
                 NOT NULL,
 
+    pandemic_id INTEGER
+                FOREIGN KEY REFERENCES pandemics(id)
+                NOT NULL, 
+
     p_name      VARCHAR(25) 
                 NOT NULL,
 
